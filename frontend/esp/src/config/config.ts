@@ -1,0 +1,1 @@
+const	ws_endpoint = "ws://localhost:8000/ws/"
