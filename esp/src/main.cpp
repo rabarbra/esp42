@@ -52,8 +52,10 @@ void    loop()
 void    doOp(uint8_t *payload)
 {
     deserializeJson(doc, payload);
-    Serial.println(doc["op"].as<int>());
-    Serial.println(doc["msg"].as<String>());
+    int     op_type = doc["op"].as<int>();
+    String  msg = doc["msg"].as<String>();
+    Serial.println(op_type);
+    Serial.println(msg);
 }
 
 void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
