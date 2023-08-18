@@ -72,12 +72,13 @@ async def ws_web_endpoint(websocket: WebSocket, client_id: str):
     try:
         while True:
             data: Dict[str, str] = await websocket.receive_json()
+            print(f"Recived: {data}")
             if 'op' not in data:
                 continue
             if (data['op'] == 'cnct_esp' and 'data' in data):
-                manager.connect_esp(client_id, data['data'].get('esp_id', None))
+                await manager.connect_esp(client_id, data['data'].get('esp_id', None))
             elif (data['op'] == 'msg_esp' and 'data' in data):
-                manager.send_to_esp(data['data'].get('json'), client_id, data['data'].get('esp_id'))
+                await manager.send_to_esp(data['data'].get('json'), client_id, data['data'].get('esp_id'))
     except WebSocketDisconnect:
         manager.disconnect(client_id, 'web')
 
@@ -88,7 +89,6 @@ async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
     try:
         while True:
             data = await websocket.receive_text()
-            await manager.send_response_message(f"You wrote: {data}", websocket)
-            await manager.broadcast_web(f"Client #{client_id} says: {data}", client_id)
+            await manager.broadcast_web(f"ESP #{client_id} says: {data}", client_id)
     except WebSocketDisconnect:
         manager.disconnect(client_id, 'esp')
