@@ -2,8 +2,10 @@ import uvicorn
 from typing import Dict, List, Literal, Any
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import RedirectResponse
+from mangum import Mangum
 
 app = FastAPI()
+handler = Mangum(app)
 
 frontend_endpoint = 'http://localhost:3000'
 
