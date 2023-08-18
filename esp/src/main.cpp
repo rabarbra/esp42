@@ -2,67 +2,91 @@
 #include <ESP8266WiFi.h>
 #include <WebSocketsClient.h>
 #include <FastLED.h>
+#include <ArduinoJson.h>
+#define NUM_LEDS 64
 
-#define NUM_LEDS    64      // Number of LEDs in your panel
+const int   LedPin = 0;
+
+const char  *ssid = "rabarbra";
+const char  *pass = "12345678";
+
+const char  *api_host = "172.20.10.2";
+const int   api_port = 8000;
+const char  *api_path = "/ws_esp/123";
 
 CRGB leds[NUM_LEDS];
+WebSocketsClient    webSocket;
+StaticJsonDocument<200> doc;
 
-const int LED_PIN  = 0;
+void    webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
 
-const int soundSensorPin = A0;
-
-void setup() {
-  Serial.begin(115200);
-  FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS); // Define LED strip configuration
-  FastLED.setBrightness(50);  // Set initial brightness (adjust as needed)
-  FastLED.clear();            // Clear all LEDs
-  FastLED.show();             // Update LED strip
+void    setup()
+{
+    Serial.begin(9600);
+    Serial.end();
+    Serial.begin(9600);
+    Serial.flush();
+    Serial.println();
+    WiFi.begin(ssid, pass);
+    Serial.println("Connecting");
+    while (WiFi.status() != WL_CONNECTED)
+    {
+        delay(500);
+        Serial.print(WiFi.status());
+    }
+    Serial.println();
+    Serial.print("Connected, IP address: ");
+    Serial.println(WiFi.localIP());
+    FastLED.addLeds<WS2812B, LedPin, GRB>(leds, NUM_LEDS);
+    FastLED.setBrightness(50);
+    webSocket.begin(api_host, api_port, api_path);
+	webSocket.onEvent(webSocketEvent);
+	webSocket.setReconnectInterval(5000);
 }
 
-void loop() {
-  int soundValue = analogRead(soundSensorPin);
-  Serial.print("Sound Value: ");
-  Serial.println(soundValue);
-
-  FastLED.clear();           // Clear all LEDs
-  if (soundValue < 50)
-    leds[10] = 0xFF0000;
-   if (soundValue >= 50)
-    leds[11] = 0x00FF00;
-   FastLED.show();            // Update LED strip
-  delay(300);
+void    loop()
+{
+    webSocket.loop();
 }
 
+void    doOp(uint8_t *payload)
+{
+    deserializeJson(doc, payload);
+    int     op_type = doc["op"].as<int>();
+    String  msg = doc["msg"].as<String>();
+    Serial.println(op_type);
+    Serial.println(msg);
+}
 
-
-
-
-
-
-// #include <FastLED.h>
-
-// #define LED_PIN     0       // Define the GPIO pin connected to the LED data input
-// #define NUM_LEDS    64      // Number of LEDs in your panel
-
-// CRGB leds[NUM_LEDS];        // Create an array to hold LED colors
-
-// void setup() {
-//   FastLED.addLeds<WS2812, LED_PIN, GRB>(leds, NUM_LEDS); // Define LED strip configuration
-//   FastLED.setBrightness(50);  // Set initial brightness (adjust as needed)
-//   FastLED.clear();            // Clear all LEDs
-//   FastLED.show();             // Update LED strip
-// }
-
-// void loop() {
-//   int targetLED = 10;        // Change this to the index of the LED you want to turn on (0 to NUM_LEDS-1)
-
-//   FastLED.clear();           // Clear all LEDs
-//   leds[targetLED] = 0xFF0000; // Set the color of the target LED (you can change this color)
-//   FastLED.show();            // Update LED strip
-//   delay(1000);               // Wait for 1 second
-
-//   // Turn off the LED
-//   leds[targetLED] = 0x00FF00;
-//   FastLED.show();
-//   delay(1000);
-// }
+void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
+{
+	switch(type)
+    {
+		case WStype_DISCONNECTED:
+			Serial.printf("[WSc] Disconnected!\n");
+			break;
+		case WStype_CONNECTED: {
+			Serial.printf("[WSc] Connected to url: %s\n", payload);
+			//webSocket.sendTXT("Connected");
+		}
+			break;
+		case WStype_TEXT:
+			Serial.printf("[WSc] get text: %s\n", payload);
+            doOp(payload);
+			break;
+		case WStype_BIN:
+			Serial.printf("[WSc] get binary length: %u\n", length);
+			hexdump(payload, length);
+			// send data to server
+			// webSocket.sendBIN(payload, length);
+			break;
+        case WStype_PING:
+            // pong will be send automatically
+            Serial.printf("[WSc] get ping\n");
+            break;
+        case WStype_PONG:
+            // answer to a ping we send
+            Serial.printf("[WSc] get pong\n");
+            break;
+    }
+}

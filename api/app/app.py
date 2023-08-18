@@ -1,3 +1,4 @@
+import uvicorn
 from typing import Dict, List, Literal, Any
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import RedirectResponse
@@ -92,3 +93,6 @@ async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
             await manager.broadcast_web(f"ESP #{client_id} says: {data}", client_id)
     except WebSocketDisconnect:
         manager.disconnect(client_id, 'esp')
+
+if __name__ == "__main__":
+   uvicorn.run(app, host="0.0.0.0", port=8080)
