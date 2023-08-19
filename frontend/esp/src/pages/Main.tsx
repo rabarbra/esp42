@@ -9,6 +9,7 @@ const Main = () => {
 	const [msg, setMsg] = React.useState("");
 
 	const ws = new WebSocket(ws_endpoint + client_id);
+	console.log(ws);
 	ws.onmessage = function (event) {
 		const json = JSON.parse(event.data);
 		console.log("Recived...", json);
