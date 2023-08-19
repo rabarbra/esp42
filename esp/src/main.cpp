@@ -10,8 +10,8 @@ const int   LedPin = 0;
 const char  *ssid = "rabarbra";
 const char  *pass = "12345678";
 
-const char  *api_host = "172.20.10.2";
-const int   api_port = 8000;
+const char  *api_host = "api.esp42.eu";
+const int   api_port = 80;
 const char  *api_path = "/ws_esp/123";
 
 CRGB leds[NUM_LEDS];
@@ -49,13 +49,30 @@ void    loop()
     webSocket.loop();
 }
 
+void switch_led(int op, int num, int color)
+{
+    //FastLED.clear();
+    Serial.print("Changing: ");
+    Serial.println(num);
+    if (op == 0)
+        leds[num] = color;
+    else
+        leds[num] = 0x000000;
+    FastLED.show();
+}
+
 void    doOp(uint8_t *payload)
 {
     deserializeJson(doc, payload);
-    int     op_type = doc["op"].as<int>();
-    String  msg = doc["msg"].as<String>();
+    int     op_type = doc["op"];
     Serial.println(op_type);
-    Serial.println(msg);
+    if (op_type == 0 || op_type == 1)
+    {
+        int num = doc["msg"]["led"];
+        int color = doc["msg"]["clr"];
+        Serial.println("before");
+        switch_led(op_type, num, color);
+    }
 }
 
 void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)

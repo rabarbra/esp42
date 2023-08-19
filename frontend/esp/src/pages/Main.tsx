@@ -1,15 +1,12 @@
 import React	from "react";
-import {
-	client_id,
-	ws_endpoint
-}				from "../config/config";
+import ButtonSet from "../components/ButtonSet";
+import ws from "../websocket/websocket";
+import { ColorPicker, Stack, Text } from "@mantine/core";
 
 const Main = () => {
 	const [msgs, setMsgs] = React.useState([""]);
 	const [msg, setMsg] = React.useState("");
-
-	const ws = new WebSocket(ws_endpoint + client_id);
-	console.log(ws);
+	const [value, onChange] = React.useState('#0000ff');
 	ws.onmessage = function (event) {
 		const json = JSON.parse(event.data);
 		console.log("Recived...", json);
@@ -43,6 +40,11 @@ const Main = () => {
 				Send
 			</button>
 			{messages}
+    	<Stack align="center">
+			<ButtonSet clr={value}/>
+    	  	<ColorPicker format="hex" value={value} onChange={onChange} />
+    	  	<Text color={value}>{value}</Text>
+    	</Stack>
 		</div>
 	);
 };

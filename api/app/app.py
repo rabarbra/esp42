@@ -35,8 +35,10 @@ class WsConnectionManager:
         if (web_id in self.web and esp_id in self.esp):
             for _, val in self.web_esp.items():
                 if esp_id in val:
+                    print("Already connected");
                     return
             self.web_esp[web_id].append(esp_id)
+            print("Connected");
             self.broadcast_web('taken')
 
     async def send_response_message(self, message: str, websocket: WebSocket):
@@ -58,8 +60,11 @@ class WsConnectionManager:
             self, message: Dict[str, Any],
             web_id: str, esp_id: str
     ):
-        if (web_id in self.web_esp and esp_id in self.web_esp[web_id]):
-            await self.esp[esp_id].send_json(message)
+        print(f"web_esp: {self.web_esp}")
+        #if (web_id in self.web_esp and esp_id in self.web_esp[web_id]):
+        print(f"Sending to esp {esp_id} {message}")
+        await self.esp[esp_id].send_json(message)
+        print("Sent")
 
 manager = WsConnectionManager()
 
@@ -81,8 +86,10 @@ async def ws_web_endpoint(websocket: WebSocket, client_id: str):
             if 'op' not in data:
                 continue
             if (data['op'] == 'cnct_esp' and 'data' in data):
+                print(f"Connecting {data['data'].get('esp_id', None)}")
                 await manager.connect_esp(client_id, data['data'].get('esp_id', None))
             elif (data['op'] == 'msg_esp' and 'data' in data):
+                print(f"Message to esp {data}")
                 await manager.send_to_esp(data['data'].get('json'), client_id, data['data'].get('esp_id'))
     except WebSocketDisconnect:
         manager.disconnect(client_id, 'web')
@@ -99,4 +106,4 @@ async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
         manager.disconnect(client_id, 'esp')
 
 if __name__ == "__main__":
-   uvicorn.run(app, host="localhost", port=8080)
+   uvicorn.run(app, host="0.0.0.0", port=8080)
