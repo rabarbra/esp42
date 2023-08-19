@@ -5,7 +5,6 @@ from fastapi.responses import RedirectResponse
 from mangum import Mangum
 
 app = FastAPI()
-handler = Mangum(app)
 
 frontend_endpoint = 'http://localhost:3000'
 
@@ -69,6 +68,10 @@ manager = WsConnectionManager()
 async def get():
     return RedirectResponse(frontend_endpoint)
 
+@app.get("/hello")
+async def hello():
+    return "Hello"
+
 @app.websocket("/ws_web/{client_id}")
 async def ws_web_endpoint(websocket: WebSocket, client_id: str):
     await manager.connect(websocket, client_id, 'web')
@@ -96,5 +99,7 @@ async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
     except WebSocketDisconnect:
         manager.disconnect(client_id, 'esp')
 
+handler = Mangum(app)
+
 if __name__ == "__main__":
-   uvicorn.run(app, host="0.0.0.0", port=8080)
+   uvicorn.run(app, host="localhost", port=8080)
