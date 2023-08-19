@@ -1,1 +1,1 @@
-from .main import handler
+from .app import app
