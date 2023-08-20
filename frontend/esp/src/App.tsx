@@ -1,9 +1,19 @@
-import React from 'react';
-import Main from './pages/Main';
+import {
+    AppShell
+}                       from '@mantine/core';
+import Main             from './pages/Main';
+import ThemeProvider    from './theme/ThemeProvider';
+import MainHeader       from './components/MainHeader';
 
 function App() {
     return (
-        <Main/>
+        <ThemeProvider>
+            <AppShell
+                header={<MainHeader/>}
+            >
+                <Main/>
+            </AppShell>
+        </ThemeProvider>
     );
 }
 

@@ -19,10 +19,16 @@ void setup() {
   FastLED.show();             // Update LED strip
 }
 
+int prevVal = 0;
+
 void loop() {
   int soundValue = analogRead(soundSensorPin);
-  Serial.print("Sound Value: ");
-  Serial.println(soundValue);
+  if (abs(soundValue - prevVal) > 3)
+  {
+    Serial.print("Sound Value: ");
+    Serial.println(soundValue);
+    prevVal = soundValue;
+  }
 
   FastLED.clear();           // Clear all LEDs
   if (soundValue < 50)
@@ -30,5 +36,5 @@ void loop() {
    if (soundValue >= 50)
     leds[11] = 0x00FF00;
    FastLED.show();            // Update LED strip
-  delay(300);
+  //delay(10);
 }

@@ -1,15 +1,15 @@
+import React        from "react";
 import {
-    Image,
-    SimpleGrid,
+    Group,
     Text
-} from "@mantine/core";
+}                   from "@mantine/core";
 import {
     Dropzone,
     FileWithPath,
     IMAGE_MIME_TYPE
-} from "@mantine/dropzone";
-import React from "react";
-import PixelateImg from "./PixelateImg";
+}                   from "@mantine/dropzone";
+import PixelateImg  from "./PixelateImg";
+import { sendArray } from "../api/api";
 
 const DropImg = () => {
     const [files, setFiles] = React.useState<FileWithPath[]>([]);
@@ -22,7 +22,7 @@ const DropImg = () => {
                 width={320}
                 height={320}
                 pixelSize={40}
-                //imageProps={{ onLoad: () => URL.revokeObjectURL(imageUrl) }}
+                clbck={sendArray}
             />
         );
     });
@@ -31,14 +31,11 @@ const DropImg = () => {
             <Dropzone accept={IMAGE_MIME_TYPE} onDrop={setFiles}>
                 <Text align="center">Drop images here</Text>
             </Dropzone>
-        
-            <SimpleGrid
-                cols={4}
-                breakpoints={[{ maxWidth: 'sm', cols: 1 }]}
+            <Group
                 mt={previews.length > 0 ? 'xl' : 0}
             >
                 {previews}
-            </SimpleGrid>
+            </Group>
         </div>
     );
   }

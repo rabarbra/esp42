@@ -3,20 +3,24 @@
 #include <WebSocketsClient.h>
 #include <FastLED.h>
 #include <ArduinoJson.h>
+
+// LED MATRIX SETTINGS
 #define NUM_LEDS 64
-
+#define BRIGHTNESS 60
 const int   LedPin = 0;
+CRGB        leds[NUM_LEDS];
 
+// WIFI SETTINGS
 const char  *ssid = "rabarbra";
 const char  *pass = "12345678";
 
+// WEBSOCKET SETTINGS
 const char  *api_host = "api.esp42.eu";
 const int   api_port = 80;
 const char  *api_path = "/ws_esp/123";
 
-CRGB leds[NUM_LEDS];
 WebSocketsClient    webSocket;
-StaticJsonDocument<200> doc;
+StaticJsonDocument<2048> doc;
 
 void    webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
 
@@ -37,8 +41,11 @@ void    setup()
     Serial.println();
     Serial.print("Connected, IP address: ");
     Serial.println(WiFi.localIP());
+
     FastLED.addLeds<WS2812B, LedPin, GRB>(leds, NUM_LEDS);
-    FastLED.setBrightness(50);
+    FastLED.setBrightness(BRIGHTNESS);
+    FastLED.setCorrection(Typical8mmPixel);
+
     webSocket.begin(api_host, api_port, api_path);
 	webSocket.onEvent(webSocketEvent);
 	webSocket.setReconnectInterval(5000);
@@ -49,9 +56,11 @@ void    loop()
     webSocket.loop();
 }
 
-void switch_led(int op, int num, int color)
+void switch_led(int op, JsonObject obj)
 {
     //FastLED.clear();
+    int num = obj["led"];
+    int color = obj["clr"];
     Serial.print("Changing: ");
     Serial.println(num);
     if (op == 0)
@@ -61,6 +70,19 @@ void switch_led(int op, int num, int color)
     FastLED.show();
 }
 
+void display_img(JsonArray img)
+{
+    int i = 0;
+    Serial.println("img");
+    for(JsonVariant v : img) {
+        Serial.print(i);
+        Serial.print(": ");
+        Serial.println(v.as<int>());
+        leds[i++] = v.as<int>();
+        FastLED.show();
+    }
+}
+
 void    doOp(uint8_t *payload)
 {
     deserializeJson(doc, payload);
@@ -68,10 +90,20 @@ void    doOp(uint8_t *payload)
     Serial.println(op_type);
     if (op_type == 0 || op_type == 1)
     {
-        int num = doc["msg"]["led"];
-        int color = doc["msg"]["clr"];
+        JsonObject obj = doc["msg"];
         Serial.println("before");
-        switch_led(op_type, num, color);
+        switch_led(op_type, obj);
+    }
+    else if (op_type == 2)
+    {
+        FastLED.clear();
+        FastLED.show();
+    }
+    else if (op_type == 3)
+    {
+        JsonArray img = doc["arr"];
+        Serial.println(img);
+        display_img(img);
     }
 }
 
