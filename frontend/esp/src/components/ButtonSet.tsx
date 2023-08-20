@@ -3,7 +3,7 @@ import {
 	Button,
 	SimpleGrid
 }				from '@mantine/core';
-import ws		from '../websocket/websocket';
+import ws 		from '../api/api';
 
 const Btn = (props: {val: number, clr: string, clear: boolean}) => {
 	const [clr, setClr] = React.useState("gray");
@@ -16,24 +16,8 @@ const Btn = (props: {val: number, clr: string, clear: boolean}) => {
 	}, [props.clear])
 	const bgClr = clr;
 	const chngClr = (on: boolean) => {
-		if (ws.readyState === ws.OPEN){
+		if (ws.chngClr(props.val, props.clr, on))
 			setClr(on ? props.clr : "gray");
-			ws.send(
-				JSON.stringify({
-					op: "msg_esp",
-					data: {
-						esp_id: "123",
-						json: {
-							op: on? 0 : 1,
-							msg: {
-								led: props.val,
-								clr: Number("0x" + props.clr.slice(1))
-							}
-						}
-					}
-				})
-			);
-		}
 	}
 	return (
 		<Button

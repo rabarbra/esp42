@@ -9,7 +9,7 @@ import {
     IMAGE_MIME_TYPE
 }                   from "@mantine/dropzone";
 import PixelateImg  from "./PixelateImg";
-import { sendArray } from "../api/api";
+import ws           from "../api/api";
 
 const DropImg = () => {
     const [files, setFiles] = React.useState<FileWithPath[]>([]);
@@ -22,7 +22,7 @@ const DropImg = () => {
                 width={320}
                 height={320}
                 pixelSize={40}
-                clbck={sendArray}
+                clbck={ws.sendArray}
             />
         );
     });
