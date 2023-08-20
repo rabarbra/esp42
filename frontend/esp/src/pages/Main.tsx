@@ -2,6 +2,7 @@ import React	from "react";
 import ButtonSet from "../components/ButtonSet";
 import ws from "../websocket/websocket";
 import { ColorPicker, Stack, Text } from "@mantine/core";
+import DropImg from "../components/DropImg";
 
 const Main = () => {
 	const [msgs, setMsgs] = React.useState([""]);
@@ -44,6 +45,7 @@ const Main = () => {
 			<ButtonSet clr={value}/>
     	  	<ColorPicker format="hex" value={value} onChange={onChange} />
     	  	<Text color={value}>{value}</Text>
+			<DropImg/>
     	</Stack>
 		</div>
 	);
