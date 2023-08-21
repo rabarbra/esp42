@@ -70,8 +70,7 @@ class WsConnectionManager:
         #if (web_id in self.web_esp and esp_id in self.web_esp[web_id]):
         logger.info(f"Sending to esp {esp_id} {message}")
         if (esp_id in self.esp):
-            logger.info(f"Connected: {self.esp[esp_id].client_state
-                                      == websockets.WebSocketState.CONNECTED}")
+            logger.info(f"Connected: {self.esp[esp_id].client_state == websockets.WebSocketState.CONNECTED}")
             await self.esp[esp_id].send_json(message)
             logger.info("Sent")
         logger.info(f"Not sent: {esp_id} not in {self.esp}")
