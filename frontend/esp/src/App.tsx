@@ -11,10 +11,10 @@ function App() {
     const [connected, setConnected] = React.useState(false);
     const [espId, setEspId] = React.useState("");
     const ctx = {
-        connected: connected,
-        espId: espId,
-        setEspId: setEspId,
-        connect: setConnected
+        connected:  connected,
+        espId:      espId,
+        setEspId:   setEspId,
+        connect:    setConnected
     }
     return (
         <ThemeProvider>
