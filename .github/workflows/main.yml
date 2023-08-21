@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      working-directory: ./frontend
     steps:
       - name: Checking out code
         uses: actions/checkout@v3
@@ -17,18 +19,14 @@ jobs:
         with:
           node-version: "20"
       - name: Installing dependencies
-        working-directory: frontend
         run: npm install
       - name: Building project
-        working-directory: frontend
         run: npm run build
       - name: Configure AWS Credentials
-        working-directory: frontend
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-central-1
       - name: Deploy to S3 bucket
-        working-directory: frontend
         run: aws s3 sync ./build/ s3://esp42.eu --delete
