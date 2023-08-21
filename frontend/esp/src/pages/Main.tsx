@@ -25,9 +25,9 @@ const Main = () => {
 	}
 	return (
 		<Stack align="center">
-			<JsonMsg/>
 			<DrawPanel/>
 			<DropImg/>
+			<JsonMsg/>
 		</Stack>
 	);
 };

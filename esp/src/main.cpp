@@ -21,6 +21,7 @@ const char  *api_path = "/ws_esp/123";
 
 WebSocketsClient            webSocket;
 StaticJsonDocument<2048>    doc;
+StaticJsonDocument<2048>    responseDoc;
 
 void    webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
 
@@ -78,7 +79,8 @@ void    setup()
     // WebSocket setup
     webSocket.begin(api_host, api_port, api_path);
 	webSocket.onEvent(webSocketEvent);
-	webSocket.setReconnectInterval(5000);
+	webSocket.setReconnectInterval(4000);
+    webSocket.enableHeartbeat(6000, 1000, 4);
     delay(1000);
     FastLED.clear();
     FastLED.show();
@@ -104,9 +106,24 @@ void displayImg(JsonArray img)
 {
     int i = 0;
     for(JsonVariant v : img) {
-        leds[i++] = v.as<int>();
+        leds[i++] = v.as<long>();
         FastLED.show();
     }
+}
+
+void    sendImg()
+{
+    char txt[2028];
+    long clr;
+    responseDoc.createNestedArray("img");
+
+    for(auto & led : leds) {
+        clr = ((static_cast<long>(led.r)) << 16) + (led.g << 8) + led.b;
+        responseDoc["img"].add<long>(clr);
+    }
+    serializeJson(responseDoc, txt);
+    Serial.println(txt);
+    webSocket.sendTXT(txt);
 }
 
 void    doOp(uint8_t *payload)
@@ -122,6 +139,8 @@ void    doOp(uint8_t *payload)
     }
     else if (op_type == 3)
         displayImg(doc["arr"]);
+    else if (op_type == 4)
+        sendImg();
 }
 
 void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
@@ -140,15 +159,28 @@ void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
             doOp(payload);
 			break;
         case WStype_PING:
-            // pong will be send automatically
             Serial.printf("[WSc] get ping\n");
             break;
         case WStype_PONG:
-            // answer to a ping we send
             Serial.printf("[WSc] get pong\n");
             break;
         case WStype_ERROR:
             Serial.printf("[WSc] error: %s\n", payload);
+            break;
+        case WStype_BIN:
+            Serial.printf("[WSc] bin %s\n", payload);
+            break;
+        case WStype_FRAGMENT_TEXT_START:
+            Serial.printf("[WSc] frag text start %s\n", payload);
+            break;
+        case WStype_FRAGMENT_BIN_START:
+            Serial.printf("[WSc] frag bin start %s\n", payload);
+            break;
+        case WStype_FRAGMENT:
+            Serial.printf("[WSc] frag %s\n", payload);
+            break;
+        case WStype_FRAGMENT_FIN:
+            Serial.printf("[WSc] frag_fin %s\n", payload);
             break;
         default:
             break;

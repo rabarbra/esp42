@@ -1,7 +1,12 @@
 import uvicorn
+import json
+from logging import Logger, INFO
 from typing import Dict, List, Literal, Any
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, websockets
 from fastapi.responses import RedirectResponse
+
+logger = Logger(__name__)
+logger.setLevel(INFO)
 
 app = FastAPI()
 
@@ -35,10 +40,10 @@ class WsConnectionManager:
         if (web_id in self.web and esp_id in self.esp):
             for _, val in self.web_esp.items():
                 if esp_id in val:
-                    print("Already connected");
+                    logger.info("Already connected");
                     return
             self.web_esp[web_id].append(esp_id)
-            print("Connected");
+            logger.info("Connected");
             self.broadcast_web('taken')
 
     async def send_response_message(self, message: str, websocket: WebSocket):
@@ -61,12 +66,15 @@ class WsConnectionManager:
             self, message: Dict[str, Any],
             web_id: str, esp_id: str
     ):
-        print(f"web_esp: {self.web_esp}")
+        logger.info(f"web_esp: {self.web_esp} esp: {self.esp}")
         #if (web_id in self.web_esp and esp_id in self.web_esp[web_id]):
-        print(f"Sending to esp {esp_id} {message}")
+        logger.info(f"Sending to esp {esp_id} {message}")
         if (esp_id in self.esp):
+            logger.info(f"Connected: {self.esp[esp_id].client_state
+                                      == websockets.WebSocketState.CONNECTED}")
             await self.esp[esp_id].send_json(message)
-        print("Sent")
+            logger.info("Sent")
+        logger.info(f"Not sent: {esp_id} not in {self.esp}")
 
 manager = WsConnectionManager()
 
@@ -83,17 +91,20 @@ async def ws_web_endpoint(websocket: WebSocket, client_id: str):
     await manager.connect(websocket, client_id, 'web')
     try:
         while True:
-            data: Dict[str, str] = await websocket.receive_json()
-            print(f"Recived: {data}")
-            if 'op' not in data:
-                continue
-            if (data['op'] == 'cnct_esp' and 'data' in data):
-                print(f"Connecting {data['data'].get('esp_id', None)}")
-                await manager.connect_esp(client_id, data['data'].get('esp_id', None))
-            elif (data['op'] == 'msg_esp' and 'data' in data):
-                print(f"Message to esp {data}")
-                await manager.send_to_esp(data['data'].get('json'), client_id, data['data'].get('esp_id'))
-    except WebSocketDisconnect:
+            text = await websocket.receive_text();
+            logger.info(f"Recived: {text}")
+            if text:
+                data: Dict[str, str] = json.loads(text);
+                if 'op' not in data:
+                    continue
+                if (data['op'] == 'cnct_esp' and 'data' in data):
+                    logger.info(f"Connecting {data['data'].get('esp_id', None)}")
+                    await manager.connect_esp(client_id, data['data'].get('esp_id', None))
+                elif (data['op'] == 'msg_esp' and 'data' in data):
+                    logger.info(f"Message to esp {data}")
+                    await manager.send_to_esp(data['data'].get('json'), client_id, data['data'].get('esp_id'))
+    except WebSocketDisconnect as e:
+        logger.warning(f"Disconnecting, reason: {e.reason} code: {e.code}")
         await manager.disconnect(client_id, 'web')
 
 @app.websocket("/ws_esp/{client_id}")
@@ -103,8 +114,10 @@ async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
     try:
         while True:
             data = await websocket.receive_text()
+            logger.info(f"Msg from esp {data}");
             await manager.broadcast_web(f"ESP #{client_id} says: {data}", client_id)
-    except WebSocketDisconnect:
+    except WebSocketDisconnect as e:
+        logger.warning(f"Disconnecting, reason: {e.reason} code: {e.code}")
         await manager.broadcast_web(f"ESP #{client_id} disconnected");
         await manager.disconnect(client_id, 'esp')
 
