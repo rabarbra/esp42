@@ -5,7 +5,7 @@ from fastapi.responses import RedirectResponse
 
 app = FastAPI()
 
-frontend_endpoint = 'http://localhost:3000'
+frontend_endpoint = 'http://esp42.eu'
 
 class WsConnectionManager:
     def __init__(self) -> None:
