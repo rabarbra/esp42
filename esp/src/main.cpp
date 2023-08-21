@@ -1,8 +1,8 @@
 #include <Arduino.h>
+#include <ArduinoJson.h>
+#include <FastLED.h>
 #include <ESP8266WiFi.h>
 #include <WebSocketsClient.h>
-#include <FastLED.h>
-#include <ArduinoJson.h>
 
 // LED MATRIX SETTINGS
 #define NUM_LEDS 64
@@ -17,6 +17,8 @@ const char  *pass = "12345678";
 // WEBSOCKET SETTINGS
 const int   api_port = 80;
 const char  *api_host = "api.esp42.eu";
+//const int   api_port = 8080;
+//const char  *api_host = "172.20.10.2";
 const char  *api_path = "/ws_esp/123";
 
 WebSocketsClient            webSocket;
@@ -124,6 +126,7 @@ void    sendImg()
     serializeJson(responseDoc, txt);
     Serial.println(txt);
     webSocket.sendTXT(txt);
+    responseDoc.clear();
 }
 
 void    doOp(uint8_t *payload)
@@ -141,6 +144,7 @@ void    doOp(uint8_t *payload)
         displayImg(doc["arr"]);
     else if (op_type == 4)
         sendImg();
+    doc.clear();
 }
 
 void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
