@@ -114,7 +114,7 @@ async def hello():
 @app.websocket("/ws_web/{client_id}")
 async def ws_web_endpoint(websocket: WebSocket, client_id: str):
     await manager.connect(websocket, client_id, 'web')
-    await manager.send_to_web(json.dumps(list(manager.esp.keys())), client_id)
+    await manager.send_to_web(json.dumps({"esps": list(manager.esp.keys())}), client_id)
     try:
         while True:
             text = await websocket.receive_text();
