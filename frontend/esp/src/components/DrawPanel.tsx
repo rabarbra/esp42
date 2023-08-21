@@ -10,9 +10,9 @@ import ws 		from '../api/api';
 const Btn = (props: {ledNum: number, clr: string, clear: boolean}) => {
 	const [clr, setClr] = React.useState("gray");
 	React.useEffect(()=>{
-		if (props.clear === true && clr !== "gray")
+		if (props.clear === true)
 			setClr("gray");
-	},[props.clear])
+	},[props.clear]);
 	const chngClr = (on: boolean) => {
 		if (ws.chngClr(props.ledNum, props.clr, on))
 			setClr(on ? props.clr : "gray");
