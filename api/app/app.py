@@ -1,12 +1,40 @@
 import uvicorn
 import json
-from logging import Logger, INFO
+import  logging
 from typing import Dict, List, Literal, Any
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, websockets
 from fastapi.responses import RedirectResponse
 
-logger = Logger(__name__)
-logger.setLevel(INFO)
+logger = logging.getLogger(__name__)
+uvicorn.Config(
+    'esp42',
+    log_config = {
+        'version': 1,
+        "disable_existing_loggers": True,
+        "formatters":{
+            "default":{
+                "()":"uvicorn.logging.DefaultFormatter",
+                "fmt": "%(levelprefix)s %(message)s",
+                "use_colors":"None"
+            }
+        },
+        "handlers": {
+            "default": {
+               "formatter":"default",
+               "class":"logging.StreamHandler",
+               "stream":"ext://sys.stderr"
+            }
+        },
+        'loggers': {
+            logger.name: {
+                "handlers":[
+                    "default"
+                ],
+                "level":"INFO"
+            }
+        }
+    }
+)
 
 app = FastAPI()
 
@@ -93,9 +121,12 @@ async def ws_web_endpoint(websocket: WebSocket, client_id: str):
             text = await websocket.receive_text();
             logger.info(f"Recived: {text}")
             if text:
-                data: Dict[str, str] = json.loads(text);
+                try:
+                    data: Dict[str, str] = json.loads(text);
+                except json.JSONDecodeError:
+                    logger.warning(f"Wrong json: {text}")
                 if 'op' not in data:
-                    continue
+                    return
                 if (data['op'] == 'cnct_esp' and 'data' in data):
                     logger.info(f"Connecting {data['data'].get('esp_id', None)}")
                     await manager.connect_esp(client_id, data['data'].get('esp_id', None))
@@ -121,4 +152,4 @@ async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
         await manager.disconnect(client_id, 'esp')
 
 if __name__ == "__main__":
-   uvicorn.run(app, host="0.0.0.0", port=8080)
+   uvicorn.run(app, host="localhost", port=8080)
