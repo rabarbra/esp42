@@ -74,9 +74,6 @@ class WsConnectionManager:
             logger.info("Connected");
             self.broadcast_web('taken')
 
-    async def send_response_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
-
     async def broadcast_web(self, message: str, client_id: str | None = None):
     	for id, connection in self.web.items():
             if not client_id or client_id != id:
@@ -101,7 +98,8 @@ class WsConnectionManager:
             logger.info(f"Connected: {self.esp[esp_id].client_state == websockets.WebSocketState.CONNECTED}")
             await self.esp[esp_id].send_json(message)
             logger.info("Sent")
-        logger.info(f"Not sent: {esp_id} not in {self.esp}")
+        else:
+            logger.info(f"Not sent: {esp_id} not in {self.esp}")
 
 manager = WsConnectionManager()
 
@@ -116,6 +114,7 @@ async def hello():
 @app.websocket("/ws_web/{client_id}")
 async def ws_web_endpoint(websocket: WebSocket, client_id: str):
     await manager.connect(websocket, client_id, 'web')
+    await manager.send_to_web(json.dumps(list(manager.esp.keys())), client_id)
     try:
         while True:
             text = await websocket.receive_text();
@@ -127,12 +126,36 @@ async def ws_web_endpoint(websocket: WebSocket, client_id: str):
                     logger.warning(f"Wrong json: {text}")
                 if 'op' not in data:
                     return
-                if (data['op'] == 'cnct_esp' and 'data' in data):
+                if (data['op'] == 'cnct_esp' and 'data' in data and isinstance(data['data'], dict)):
                     logger.info(f"Connecting {data['data'].get('esp_id', None)}")
                     await manager.connect_esp(client_id, data['data'].get('esp_id', None))
-                elif (data['op'] == 'msg_esp' and 'data' in data):
+                elif (data['op'] == 'msg_esp' and 'data' in data and isinstance(data['data'], dict)):
                     logger.info(f"Message to esp {data}")
-                    await manager.send_to_esp(data['data'].get('json'), client_id, data['data'].get('esp_id'))
+                    await manager.send_to_esp(
+                        data['data'].get('json'),
+                        client_id,
+                        str(data['data'].get('esp_id'))
+                    )
+                elif (data['op'] == 'chck_esp' and 'data' in data and isinstance(data['data'], dict)):
+                    esp_id = data['data'].get('esp_id')
+                    if not esp_id:
+                        await manager.send_to_web(
+                            json.dumps({"srv": "err"}),
+                            client_id
+                        )
+                    elif esp_id not in manager.esp:
+                        await manager.send_to_web(
+                            json.dumps({"srv": "no"}),
+                            client_id
+                        )
+                    else:
+                        status = manager.esp[esp_id].client_state.value
+                        await manager.send_to_web(
+                            json.dumps({"srv": status}),
+                            client_id
+                        )
+                elif (data['op'] == 'get_esp'):
+                    await manager.send_to_web(json.dumps(list(manager.esp.keys())), client_id)
     except WebSocketDisconnect as e:
         logger.warning(f"Disconnecting, reason: {e.reason} code: {e.code}")
         await manager.disconnect(client_id, 'web')
@@ -140,16 +163,22 @@ async def ws_web_endpoint(websocket: WebSocket, client_id: str):
 @app.websocket("/ws_esp/{client_id}")
 async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
     await manager.connect(websocket, client_id, 'esp')
-    await manager.broadcast_web(f'ESP #{client_id} connected');
+    await manager.broadcast_web(
+        json.dumps({"esp_id": client_id, "msg": "connected"})
+    );
     try:
         while True:
             data = await websocket.receive_text()
             logger.info(f"Msg from esp {data}");
-            await manager.broadcast_web(f"ESP #{client_id} says: {data}", client_id)
+            await manager.broadcast_web(
+                json.dumps({"esp_id": client_id, "msg": data})
+            )
     except WebSocketDisconnect as e:
         logger.warning(f"Disconnecting, reason: {e.reason} code: {e.code}")
-        await manager.broadcast_web(f"ESP #{client_id} disconnected");
+        await manager.broadcast_web(
+            json.dumps({"esp_id": client_id, "msg": "disconnected"})
+        )
         await manager.disconnect(client_id, 'esp')
 
 if __name__ == "__main__":
-   uvicorn.run(app, host="localhost", port=8080)
+   uvicorn.run(app, host="0.0.0.0", port=8080)
