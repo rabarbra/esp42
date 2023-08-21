@@ -1,43 +1,33 @@
-import React	from "react";
+import React				from "react";
 import {
-	Button,
-	ColorPicker,
 	Stack,
-	Text
-}					from "@mantine/core";
-import ButtonSet	from "../components/ButtonSet";
-import DropImg		from "../components/DropImg";
-import JsonMsg 		from "../components/JsonMsg";
-import ws 			from "../api/api";
+}							from "@mantine/core";
+import DrawPanel			from "../components/DrawPanel";
+import DropImg				from "../components/DropImg";
+import JsonMsg 				from "../components/JsonMsg";
+import ws					from "../api/api";
+import ConnectionContext	from "../api/ConnectionContext";
 
 const Main = () => {
-	const [msgs, setMsgs] = React.useState([""]);
-	const [value, onChange] = React.useState('#0000ff');
-	const [clear, setClear] = React.useState(false);
-	ws.ws.onmessage = function (event) {
-		const json = JSON.parse(event.data);
-		console.log("Recived...", json);
-		setMsgs([json, ...msgs]);
-	};
-	const messages = msgs.map((item, idx) => {
-		return (
-			<div key={idx}>
-				<Text> {item}</Text>
-			</div>
-		);
-	});
+	const {setEspId, connect} = React.useContext(ConnectionContext);
+	ws.ws.onmessage = (e) => {
+		console.log("Message: ", e);
+		if ((e.data as string).endsWith("disconnected"))
+		{
+			connect(false);
+			setEspId("");
+		}
+		else if ((e.data as string).endsWith("connected"))
+		{
+			connect(true);
+			setEspId((e.data as string).split(" ").slice(0, 2).join(" "));
+		}
+	}
 	return (
 		<Stack align="center">
 			<JsonMsg/>
-			<ButtonSet clr={value} clear={clear}/>
-    	  	<ColorPicker format="hex" value={value} onChange={onChange} />
-    	  	<Text color={value}>{value}</Text>
+			<DrawPanel/>
 			<DropImg/>
-			<Button onClick={()=>{
-				ws.clear();
-			}}>
-				Clear
-			</Button>
 		</Stack>
 	);
 };
