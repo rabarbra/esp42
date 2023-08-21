@@ -1,5 +1,8 @@
-import { Button, Stack } from "@mantine/core"
-import React from "react"
+import {
+    Button,
+    Stack
+}               from "@mantine/core"
+import React    from "react"
 
 export type PixelateImgProps = {
     src: string

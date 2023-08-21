@@ -7,7 +7,6 @@ import {
 	IconMoonStars,
 	IconSun
 }	from "@tabler/icons-react";
-import React from "react";
 
 const ToggleColorScheme = (props: ActionIconProps) =>
 {

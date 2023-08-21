@@ -5,7 +5,7 @@ import {
 }							from "@mantine/core";
 import ToggleColorScheme	from "./ToggleColorScheme";
 import ConnectionContext	from "../api/ConnectionContext";
-import { IconPoint } from "@tabler/icons-react";
+import { IconPoint } 		from "@tabler/icons-react";
 
 const MainHeader = () =>
 {
