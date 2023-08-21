@@ -54,7 +54,8 @@ class WsConnectionManager:
             await connection.send_text(message)
 	
     async def send_to_web(self, message: str, client_id: str):
-        await self.web[client_id].send_text(message)
+        if (client_id in self.web):
+            await self.web[client_id].send_text(message)
 
     async def send_to_esp(
             self, message: Dict[str, Any],
@@ -63,7 +64,8 @@ class WsConnectionManager:
         print(f"web_esp: {self.web_esp}")
         #if (web_id in self.web_esp and esp_id in self.web_esp[web_id]):
         print(f"Sending to esp {esp_id} {message}")
-        await self.esp[esp_id].send_json(message)
+        if (esp_id in self.esp):
+            await self.esp[esp_id].send_json(message)
         print("Sent")
 
 manager = WsConnectionManager()
@@ -92,7 +94,7 @@ async def ws_web_endpoint(websocket: WebSocket, client_id: str):
                 print(f"Message to esp {data}")
                 await manager.send_to_esp(data['data'].get('json'), client_id, data['data'].get('esp_id'))
     except WebSocketDisconnect:
-        manager.disconnect(client_id, 'web')
+        await manager.disconnect(client_id, 'web')
 
 @app.websocket("/ws_esp/{client_id}")
 async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
@@ -103,7 +105,7 @@ async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
             data = await websocket.receive_text()
             await manager.broadcast_web(f"ESP #{client_id} says: {data}", client_id)
     except WebSocketDisconnect:
-        manager.disconnect(client_id, 'esp')
+        await manager.disconnect(client_id, 'esp')
 
 if __name__ == "__main__":
    uvicorn.run(app, host="0.0.0.0", port=8080)
