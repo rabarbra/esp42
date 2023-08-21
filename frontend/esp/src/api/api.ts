@@ -1,7 +1,7 @@
 import {
 	client_id,
 	ws_endpoint
-}	from "../config/config";
+}		from "../config/config";
 
 export class WebSocketApi {
 	endpoint: string;

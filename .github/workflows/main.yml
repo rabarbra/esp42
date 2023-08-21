@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      working-directory: ./frontend
+      working-directory: ./frontend/esp
     steps:
       - name: Checking out code
         uses: actions/checkout@v3
@@ -20,8 +20,10 @@ jobs:
           node-version: "20"
       - name: Installing dependencies
         run: npm install
+        working-directory: ${{env.working-directory}}
       - name: Building project
         run: npm run build
+        working-directory: ${{env.working-directory}}
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -30,3 +32,4 @@ jobs:
           aws-region: eu-central-1
       - name: Deploy to S3 bucket
         run: aws s3 sync ./build/ s3://esp42.eu --delete
+        working-directory: ${{env.working-directory}}
