@@ -115,7 +115,6 @@ const PixelateImg = ({
         <Stack>
             <canvas ref={canvasRef as React.MutableRefObject<HTMLCanvasElement>} />
             <Button onClick={()=>{
-                console.log(pixelArray);
                 if (clbck)
                 {
                     clbck(pixelArray);

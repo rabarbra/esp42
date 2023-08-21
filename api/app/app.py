@@ -99,12 +99,13 @@ async def ws_web_endpoint(websocket: WebSocket, client_id: str):
 @app.websocket("/ws_esp/{client_id}")
 async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
     await manager.connect(websocket, client_id, 'esp')
-    manager.broadcast_web('connected');
+    await manager.broadcast_web(f'ESP #{client_id} connected');
     try:
         while True:
             data = await websocket.receive_text()
             await manager.broadcast_web(f"ESP #{client_id} says: {data}", client_id)
     except WebSocketDisconnect:
+        await manager.broadcast_web(f"ESP #{client_id} disconnected");
         await manager.disconnect(client_id, 'esp')
 
 if __name__ == "__main__":
