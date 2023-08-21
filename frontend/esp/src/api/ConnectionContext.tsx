@@ -25,7 +25,7 @@ export const ConnectionContextProvider = (
 		if (data.esps && Array.isArray(data.esps) &&  data.esps.length > 0)
 		{
 			setConnected(true);
-			setEspId(data[0]);
+			setEspId(data.esps[0]);
 		}
 		else if (data.msg && data.msg === "disconnected")
 		{
