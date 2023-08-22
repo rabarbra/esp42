@@ -4,13 +4,15 @@ import {
 }		from "../config/config";
 
 export class WebSocketApi {
+
 	endpoint: string;
 	clientId: string;
 	espId: string;
 	ws: WebSocket;
-	constructor(endpoint: string, clientId: string, espId: string) {
+
+	constructor(endpoint: string, clientId: string) {
 		this.endpoint = endpoint;
-		this.espId = espId;
+		this.espId = "";
 		this.clientId = clientId;
 		this.ws = new WebSocket(this.endpoint + this.clientId);
 		this.ws.onclose = (e) => {console.log("Closed: ", e)}
@@ -26,22 +28,35 @@ export class WebSocketApi {
 		console.log("Reconnecting");
 	}
 
-	public mstToEsp(msg: Object | string) {
+	public setEspId(espId: string)
+	{
+		this.espId = espId;
+	}
+	
+	public msgToServer(msg: Object | string) {
 		if (this.ws.readyState !== this.ws.OPEN)
-			this.reconnect()
+			this.reconnect();
 		if (this.ws.readyState === this.ws.OPEN) {
-			const serialized = JSON.stringify({
-				op: "msg_esp",
-				data: {
-					esp_id: this.espId,
-					json: msg
-				}
-			})
+			const serialized = JSON.stringify(msg)
 			console.log("Sending", serialized);
 			this.ws.send(serialized);
 			return (true);
 		}
 		return (false);
+	}
+
+	public mstToEsp(msg: Object | string) {
+		if (!this.espId)
+			this.msgToServer({"op": "get_esp"});
+		if (!this.espId)
+			return (false)
+		return (this.msgToServer({
+			op: "msg_esp",
+			data: {
+				esp_id: this.espId,
+				json: msg
+			}
+		}));
 	}
 
 	public sendArray = (pixelArray: number[]) => {
@@ -60,6 +75,6 @@ export class WebSocketApi {
 	}
 }
 
-const ws = new WebSocketApi(ws_endpoint, client_id, "123");
+const ws = new WebSocketApi(ws_endpoint, client_id);
 
 export default ws;
