@@ -59,7 +59,9 @@ class WsConnectionManager:
 
     async def disconnect(self, client_id: str, kind: Literal['web', 'esp']):
         if (kind == 'esp' and client_id in self.esp):
+            ws = self.esp[client_id]
             del self.esp[client_id]
+            await self.connect(ws, client_id, 'esp')
         elif client_id in self.web:
             del self.web[client_id]
             del self.web_esp[client_id]
@@ -68,11 +70,12 @@ class WsConnectionManager:
         if (web_id in self.web and esp_id in self.esp):
             for _, val in self.web_esp.items():
                 if esp_id in val:
-                    logger.info("Already connected");
+                    logger.info("Already connected")
+                    self.send_to_web(json.dumps({"srv": "busy", "esp_id": esp_id}), web_id)
                     return
             self.web_esp[web_id].append(esp_id)
-            logger.info("Connected");
-            self.broadcast_web('taken')
+            logger.info("Connected")
+            self.send_to_web(json.dumps({"srv": "connected", "esp_id": esp_id}), web_id)
 
     async def broadcast_web(self, message: str, client_id: str | None = None):
     	for id, connection in self.web.items():
@@ -155,7 +158,7 @@ async def ws_web_endpoint(websocket: WebSocket, client_id: str):
                             client_id
                         )
                 elif (data['op'] == 'get_esp'):
-                    await manager.send_to_web(json.dumps(list(manager.esp.keys())), client_id)
+                    await manager.send_to_web(json.dumps({"esps": list(manager.esp.keys())}), client_id)
     except WebSocketDisconnect as e:
         logger.warning(f"Disconnecting, reason: {e.reason} code: {e.code}")
         await manager.disconnect(client_id, 'web')
