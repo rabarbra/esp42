@@ -17,9 +17,9 @@ const char  *pass = "12345678";
 // WEBSOCKET SETTINGS
 const int   api_port = 80;
 const char  *api_host = "api.esp42.eu";
-//const int   api_port = 8080;
+const int   api_port = 8080;
 //const char  *api_host = "172.20.10.2";
-const char  *api_path = "/ws_esp/123";
+//const char  *api_path = "/ws_esp/123";
 
 WebSocketsClient            webSocket;
 StaticJsonDocument<2048>    doc;
@@ -144,6 +144,8 @@ void    doOp(uint8_t *payload)
         displayImg(doc["arr"]);
     else if (op_type == 4)
         sendImg();
+    else if (op_type == 9)
+        webSocket.sendTXT("connected");
     doc.clear();
 }
 
@@ -156,7 +158,6 @@ void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
 			break;
 		case WStype_CONNECTED:
 			Serial.printf("[WSc] Connected to url: %s\n", payload);
-            webSocket.sendTXT("connected");
 			break;
 		case WStype_TEXT:
 			Serial.printf("[WSc] get text: %s\n", payload);
@@ -170,21 +171,6 @@ void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
             break;
         case WStype_ERROR:
             Serial.printf("[WSc] error: %s\n", payload);
-            break;
-        case WStype_BIN:
-            Serial.printf("[WSc] bin %s\n", payload);
-            break;
-        case WStype_FRAGMENT_TEXT_START:
-            Serial.printf("[WSc] frag text start %s\n", payload);
-            break;
-        case WStype_FRAGMENT_BIN_START:
-            Serial.printf("[WSc] frag bin start %s\n", payload);
-            break;
-        case WStype_FRAGMENT:
-            Serial.printf("[WSc] frag %s\n", payload);
-            break;
-        case WStype_FRAGMENT_FIN:
-            Serial.printf("[WSc] frag_fin %s\n", payload);
             break;
         default:
             break;
