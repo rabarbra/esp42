@@ -17,13 +17,13 @@ const char  *pass = "12345678";
 // WEBSOCKET SETTINGS
 const int   api_port = 80;
 const char  *api_host = "api.esp42.eu";
-const int   api_port = 8080;
+//const int   api_port = 8080;
 //const char  *api_host = "172.20.10.2";
-//const char  *api_path = "/ws_esp/123";
+const char  *api_path = "/ws_esp/123";
 
 WebSocketsClient            webSocket;
 StaticJsonDocument<2048>    doc;
-StaticJsonDocument<2048>    responseDoc;
+StaticJsonDocument<1024>    responseDoc;
 
 void    webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
 
@@ -82,7 +82,7 @@ void    setup()
     webSocket.begin(api_host, api_port, api_path);
 	webSocket.onEvent(webSocketEvent);
 	webSocket.setReconnectInterval(4000);
-    webSocket.enableHeartbeat(6000, 1000, 4);
+    //webSocket.enableHeartbeat(6000, 1000, 4);
     delay(1000);
     FastLED.clear();
     FastLED.show();
@@ -115,7 +115,7 @@ void displayImg(JsonArray img)
 
 void    sendImg()
 {
-    char txt[2028];
+    char txt[1024];
     long clr;
     responseDoc.createNestedArray("img");
 
@@ -158,6 +158,7 @@ void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
 			break;
 		case WStype_CONNECTED:
 			Serial.printf("[WSc] Connected to url: %s\n", payload);
+            webSocket.sendPing();
 			break;
 		case WStype_TEXT:
 			Serial.printf("[WSc] get text: %s\n", payload);

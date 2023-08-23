@@ -1,8 +1,10 @@
 import {
     Button,
+    Flex,
     Stack
-}               from "@mantine/core"
-import React    from "react"
+}                   from "@mantine/core"
+import React        from "react"
+import ImageContext from "./ImgCtx"
 
 export type PixelateImgProps = {
     src: string
@@ -25,6 +27,7 @@ const PixelateImg = ({
 }: PixelateImgProps) => {
     const [pixelArray, setPixelArray] = React.useState([] as number[]);
     const canvasRef = React.useRef<HTMLCanvasElement>()
+    const { setImg, applyImg } = React.useContext(ImageContext);
     React.useEffect(() => {
         const paintPixels = (
             ctx: CanvasRenderingContext2D,
@@ -117,14 +120,31 @@ const PixelateImg = ({
     return (
         <Stack>
             <canvas ref={canvasRef as React.MutableRefObject<HTMLCanvasElement>} />
-            <Button onClick={()=>{
-                if (clbck)
-                {
-                    clbck(pixelArray);
-                }
-            }}>
-                Send
-            </Button>
+            <Flex gap={20}>
+                <Button
+                    fullWidth
+                    ml={10}
+                    onClick={()=>{
+                        if (clbck)
+                            {
+                                clbck(pixelArray);
+                            }
+                        }
+                    }
+                >
+                    Send
+                </Button>
+                <Button
+                    mr={10}
+                    onClick={()=>{
+                        setImg([...pixelArray.map(val=>"#" + val.toString(16))]);
+                        applyImg();
+                    }}
+                    fullWidth
+                >
+                    Open in editor
+                </Button>
+            </Flex>
         </Stack>
     )
 }
