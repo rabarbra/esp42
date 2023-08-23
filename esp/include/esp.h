@@ -32,4 +32,5 @@ void    webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
 void    connectionAnim();
 void    connectedAnim();
 void    life(unsigned int secs, bool send);
+void    colorLife(unsigned int secs, bool send);
 #endif
