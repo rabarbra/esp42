@@ -1,6 +1,7 @@
 import React        from "react";
 import {
-    Group,
+    SimpleGrid,
+    Stack,
     Text
 }                   from "@mantine/core";
 import {
@@ -11,7 +12,7 @@ import {
 import PixelateImg  from "./PixelateImg";
 import ws           from "../api/api";
 
-const DropImg = () => {
+const DropImg = (props: {scrl: () => void}) => {
     const [files, setFiles] = React.useState<FileWithPath[]>([]);
     const previews = files.map((file, index) => {
         const imageUrl = URL.createObjectURL(file);
@@ -22,21 +23,26 @@ const DropImg = () => {
                 width={320}
                 height={320}
                 pixelSize={40}
+                scrl={props.scrl}
                 clbck={ws.sendArray}
             />
         );
     });
     return (
-        <div>
+        <Stack mt={40}>
             <Dropzone accept={IMAGE_MIME_TYPE} onDrop={setFiles}>
                 <Text align="center">Drop images here</Text>
             </Dropzone>
-            <Group
+            <SimpleGrid cols={3}
                 mt={previews.length > 0 ? 'xl' : 0}
+                breakpoints={[
+                    {maxWidth: "xs", cols: 1},
+                    {maxWidth: "md", cols: 2}
+                ]}
             >
                 {previews}
-            </Group>
-        </div>
+            </SimpleGrid>
+        </Stack>
     );
   }
 

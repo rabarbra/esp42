@@ -4,15 +4,23 @@ import {
 	Button,
 	ColorInput,
 	Group,
+	Modal,
 	SimpleGrid,
+	Stack,
+	useMantineTheme,
 }					from '@mantine/core';
 import {
+	IconCode,
 	IconDroplet,
 	IconEraser,
 	IconTrash
 }					from '@tabler/icons-react';
 import ws 			from '../api/api';
 import ImageContext	from './ImgCtx';
+import {
+	initColor
+}					from '../config/config';
+import JsonMsg		from './JsonMsg';
 
 const Btn = (props: {
 	ledNum: number,
@@ -22,11 +30,13 @@ const Btn = (props: {
 	eraser?: boolean,
 	fill?: boolean
 }) => {
-	const [clr, setClr] = React.useState("gray");
+	const theme = useMantineTheme();
+	const gray = theme.colorScheme === 'dark' ? theme.colors.gray[8] : theme.colors.gray[7];
+	const [clr, setClr] = React.useState(gray);
 	const { img, setImg, apply, applyImg } = React.useContext(ImageContext);
 	React.useEffect(()=>{
 		if (props.clear === true)
-			setClr("gray");
+			setClr(gray);
 	},[props.clear]);
 	React.useEffect(()=>{
 		if (apply)
@@ -34,8 +44,8 @@ const Btn = (props: {
 	}, [apply, img, props.ledNum])
 	const chngClr = (on: boolean) => {
 		ws.chngClr(props.ledNum, props.clr, on)
-		setClr(on ? props.clr : "gray");
-		img[props.ledNum] = on ? props.clr : "#000000";
+		setClr(on ? props.clr : gray);
+		img[props.ledNum] = on ? props.clr : gray;
 		setImg([...img]);
 	}
 	const colorCell = () => {
@@ -73,19 +83,22 @@ const Btn = (props: {
 };
 
 const DrawPanel = () => {
-	const [clr, setClr] = React.useState('#0000ff');
+	const theme = useMantineTheme();
+	const [clr, setClr] = React.useState(initColor);
 	const [clear, setClear] = React.useState(false);
 	const [eraser, setEraser] = React.useState(false);
 	const [fill, setFill] = React.useState(false);
 	const [swatches, setSwatches] = React.useState([] as string[]);
+	const [jsonOpen, setJsonOpen] = React.useState(false);
 	const { setImg } = React.useContext(ImageContext);
+	const gray = theme.colorScheme === 'dark' ? theme.colors.gray[8] : theme.colors.gray[7];
 	const addToSwatches = () => {
 		if (swatches.includes(clr))
 			return;
 		setSwatches([clr, ...swatches.slice(0, 9)])
 	};
 	return (
-		<>
+		<Stack align='center'>
 			<SimpleGrid cols={8} spacing={5}>
 				{
 					Array.from({length: 64}, (_, i) =>
@@ -101,7 +114,7 @@ const DrawPanel = () => {
 					)
 				}
 			</SimpleGrid>
-			<Group>
+			<Group spacing={10}>
 				<ColorInput
 					format="hex"
 					w={140}
@@ -135,14 +148,31 @@ const DrawPanel = () => {
 					onClick={()=>{
 						ws.clear();
 						setClear(true);
-						setImg(Array.from({length: 64}, ()=>"#000000"));
+						setImg(Array.from({length: 64}, ()=>gray));
 					}}
 					onMouseUp={()=>setClear(false)}
 				>
 					<IconTrash/>
 				</ActionIcon>
+				<ActionIcon
+					size='md'
+					variant="transparent"
+					onClick={()=>{
+						setJsonOpen(true);
+					}}
+				>
+					<IconCode/>
+				</ActionIcon>
+				<Modal
+					centered
+					title="Send msg to server"
+					opened={jsonOpen}
+					onClose={()=>setJsonOpen(false)}
+				>
+					<JsonMsg/>
+				</Modal>
 			</Group>
-		</>
+		</Stack>
 	);
 }
 

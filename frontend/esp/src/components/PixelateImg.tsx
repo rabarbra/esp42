@@ -13,6 +13,7 @@ export type PixelateImgProps = {
     pixelSize?: number
     centered?: boolean
     fillTransparencyColor?: string
+    scrl: () => void
     clbck?: (pixelArray: number[])=>void
 }
 
@@ -23,6 +24,7 @@ const PixelateImg = ({
     pixelSize = 5,
     centered,
     fillTransparencyColor,
+    scrl,
     clbck
 }: PixelateImgProps) => {
     const [pixelArray, setPixelArray] = React.useState([] as number[]);
@@ -87,6 +89,7 @@ const PixelateImg = ({
             height,
             pixelSize,
             centered,
+            scrl,
             fillTransparencyColor
         }: PixelateImgProps) => {
             let img: HTMLImageElement | undefined = new Image()
@@ -114,6 +117,7 @@ const PixelateImg = ({
             height,
             pixelSize,
             centered,
+            scrl,
             fillTransparencyColor
         })
     }, [src, width, height, pixelSize, centered, fillTransparencyColor])
@@ -125,12 +129,10 @@ const PixelateImg = ({
                     fullWidth
                     ml={10}
                     onClick={()=>{
-                        if (clbck)
-                            {
-                                clbck(pixelArray);
-                            }
+                        if (clbck) {
+                            clbck(pixelArray);
                         }
-                    }
+                    }}
                 >
                     Send
                 </Button>
@@ -139,6 +141,7 @@ const PixelateImg = ({
                     onClick={()=>{
                         setImg([...pixelArray.map(val=>"#" + val.toString(16))]);
                         applyImg();
+                        scrl();
                     }}
                     fullWidth
                 >

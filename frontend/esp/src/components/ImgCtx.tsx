@@ -1,4 +1,7 @@
 import React	from 'react';
+import {
+	useMantineTheme
+}				from '@mantine/core';
 import ws 		from '../api/api';
 
 const ImageContext = React.createContext({
@@ -11,7 +14,9 @@ const ImageContext = React.createContext({
 export const ImgCtxProvider = (
 	props: {children: React.ReactNode}
 ) => {
-	const [img, setImg] = React.useState(Array.from({length: 64}, ()=>"#000000"));
+	const theme = useMantineTheme();
+	const gray = theme.colorScheme === 'dark' ? theme.colors.gray[8] : theme.colors.gray[7];
+	const [img, setImg] = React.useState(Array.from({length: 64}, ()=>gray));
 	const [apply, setApply] = React.useState(false);
 	React.useEffect(()=>{
 		if (apply === true)

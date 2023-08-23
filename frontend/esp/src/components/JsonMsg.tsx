@@ -1,22 +1,29 @@
-import React	from "react";
+import React				from "react";
 import {
 	Button,
-	JsonInput
-}				from "@mantine/core";
-import ws 		from "../api/api";
+	JsonInput,
+	Stack
+}							from "@mantine/core";
+import ws 					from "../api/api";
+import ConnectionContext	from "../api/ConnectionContext";
 
 const JsonMsg = () => {
-	const [msg, setMsg] = React.useState("");
+	const {espId} = React.useContext(ConnectionContext);
+	const [msg, setMsg] = React.useState(JSON.stringify(
+		{op: "msg_esp", "data": {"esp_id": espId, "json": {"op": 4}}},
+		null, 2
+	));
 	return (
-		<>
+		<Stack>
 			<JsonInput
 				autosize
-				label="Send message to server"
+				label="Enter yor message:"
 				placeholder="Send message to server"
 				formatOnBlur
+				defaultValue={msg}
 				onChange={event=>setMsg(event)}
 			/>
-			<Button 
+			<Button
 				style={{minHeight: 20, minWidth: 40}}
 				onClick={()=>{
 					if (ws.ws.readyState === ws.ws.OPEN)
@@ -28,7 +35,7 @@ const JsonMsg = () => {
 			>
 				Send
 			</Button>
-		</>
+		</Stack>
 	)
 }
 
