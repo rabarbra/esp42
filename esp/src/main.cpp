@@ -23,7 +23,7 @@ const char  *api_path = "/ws_esp/123";
 
 WebSocketsClient            webSocket;
 StaticJsonDocument<2048>    doc;
-StaticJsonDocument<1024>    responseDoc;
+StaticJsonDocument<2048>    responseDoc;
 
 void    webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
 
@@ -58,7 +58,6 @@ void    setup()
 {
     // Serial setup
     Serial.begin(9600);
-    Serial.flush();
     Serial.println();
     // FastLED setup
     FastLED.addLeds<WS2812B, LedPin, GRB>(leds, NUM_LEDS);
@@ -79,9 +78,9 @@ void    setup()
     Serial.print("Connected, IP address: ");
     Serial.println(WiFi.localIP());
     // WebSocket setup
-    webSocket.begin(api_host, api_port, api_path);
+    webSocket.begin(api_host, api_port, api_path, "");
 	webSocket.onEvent(webSocketEvent);
-	webSocket.setReconnectInterval(4000);
+	webSocket.setReconnectInterval(2000);
     //webSocket.enableHeartbeat(6000, 1000, 4);
     delay(1000);
     FastLED.clear();
@@ -115,7 +114,7 @@ void displayImg(JsonArray img)
 
 void    sendImg()
 {
-    char txt[1024];
+    char txt[1024] = {0};
     long clr;
     responseDoc.createNestedArray("img");
 
@@ -136,10 +135,7 @@ void    doOp(uint8_t *payload)
     if (op_type == 0 || op_type == 1)
         switchLed(op_type, doc["msg"]);
     else if (op_type == 2)
-    {
-        FastLED.clear();
-        FastLED.show();
-    }
+        FastLED.clear(true);
     else if (op_type == 3)
         displayImg(doc["arr"]);
     else if (op_type == 4)
@@ -158,7 +154,7 @@ void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
 			break;
 		case WStype_CONNECTED:
 			Serial.printf("[WSc] Connected to url: %s\n", payload);
-            webSocket.sendPing();
+            webSocket.sendTXT("connected");
 			break;
 		case WStype_TEXT:
 			Serial.printf("[WSc] get text: %s\n", payload);
