@@ -13,9 +13,12 @@ export const ImgCtxProvider = (
 ) => {
 	const [img, setImg] = React.useState(Array.from({length: 64}, ()=>"#000000"));
 	const [apply, setApply] = React.useState(false);
+	React.useEffect(()=>{
+		if (apply === true)
+			ws.sendArray(img.map(val=>Number("0x" + val.slice(1))));
+	},[apply, img])
 	const applyImg = () => {
 		setApply(true);
-		ws.sendArray(img.map(val=>Number("0x" + val.slice(1))));
 		setTimeout(()=>setApply(false), 100);
 	};
     const ctx = {

@@ -31,12 +31,12 @@ const Btn = (props: {
 	React.useEffect(()=>{
 		if (apply)
 			setClr(img[props.ledNum]);
-	}, [apply])
+	}, [apply, img, props.ledNum])
 	const chngClr = (on: boolean) => {
-		//if (ws.chngClr(props.ledNum, props.clr, on))
-			setClr(on ? props.clr : "gray");
-			img[props.ledNum] = on ? props.clr : "#000000";
-			setImg([...img]);
+		ws.chngClr(props.ledNum, props.clr, on)
+		setClr(on ? props.clr : "gray");
+		img[props.ledNum] = on ? props.clr : "#000000";
+		setImg([...img]);
 	}
 	const colorCell = () => {
 		if (props.eraser)
@@ -44,10 +44,10 @@ const Btn = (props: {
 		else if (props.fill) {
 			setImg([...img.map((val) => {
 				if (val === clr)
-				return (props.clr);
-				return (val);
+					return (props.clr);
+				else
+					return (val);
 			})])
-			console.log(clr, props, img);
 			applyImg();
 		} else {
 			chngClr(true);
