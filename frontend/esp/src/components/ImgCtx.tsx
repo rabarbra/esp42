@@ -25,7 +25,7 @@ export const ImgCtxProvider = (
 					return (0)
 				return Number("0x" + val.slice(1))
 			}));
-	},[apply, img])
+	},[apply, img, gray])
 	const applyImg = () => {
 		setApply(true);
 		setTimeout(()=>setApply(false), 100);
