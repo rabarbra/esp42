@@ -139,7 +139,9 @@ const PixelateImg = ({
                 <Button
                     mr={10}
                     onClick={()=>{
-                        setImg([...pixelArray.map(val=>"#" + val.toString(16))]);
+                        setImg([...pixelArray.map(
+                            val=>"#" + ("00000" + val.toString(16)).slice(-6)
+                        )]);
                         applyImg();
                         scrl();
                     }}

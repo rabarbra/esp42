@@ -43,7 +43,9 @@ export const ConnectionContextProvider = (
 		else if (data.msg && (data.msg as string).startsWith("{\"img"))
 		{
 			const img: number[] = JSON.parse(data.msg).img;
-			setImg(img.map(clr=>"#" + clr.toString(16)));
+			setImg(img.map(
+				clr=>("#" + ("00000" + clr.toString(16)).slice(-6))
+			));
 			applyImg();
 		}
 	}
