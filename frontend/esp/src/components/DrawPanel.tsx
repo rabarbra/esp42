@@ -37,7 +37,7 @@ const Btn = (props: {
 	React.useEffect(()=>{
 		if (props.clear === true)
 			setClr(gray);
-	},[props.clear]);
+	},[props.clear, gray]);
 	React.useEffect(()=>{
 		if (apply)
 			setClr(img[props.ledNum]);

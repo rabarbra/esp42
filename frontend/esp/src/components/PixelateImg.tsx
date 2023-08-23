@@ -120,7 +120,7 @@ const PixelateImg = ({
             scrl,
             fillTransparencyColor
         })
-    }, [src, width, height, pixelSize, centered, fillTransparencyColor])
+    }, [src, width, height, pixelSize, centered, fillTransparencyColor, scrl])
     return (
         <Stack>
             <canvas ref={canvasRef as React.MutableRefObject<HTMLCanvasElement>} />
