@@ -96,7 +96,7 @@ async def ws_web_endpoint(websocket: WebSocket, client_id: str):
                         client_id
                     )
     except WebSocketDisconnect as err:
-        logger.warning("Disconnecting, reason: %s code: %s", err.reason, err.code)
+        logger.warning("Disconnecting web %s, reason: %s code: %s", client_id, err.reason, err.code)
         await manager.disconnect(client_id, 'web')
 
 @app.websocket("/ws_esp/{client_id}")
@@ -114,7 +114,7 @@ async def ws_esp_endpoint(websocket: WebSocket, client_id: str):
                 json.dumps({"esp_id": client_id, "msg": data})
             )
     except WebSocketDisconnect as err:
-        logger.warning("Disconnecting, reason: %s code: %s", err.reason, err.code)
+        logger.warning("Disconnecting esp %s, reason: %s code: %s", client_id, err.reason, err.code)
         await manager.broadcast_web(
             json.dumps({"esp_id": client_id, "msg": "disconnected"})
         )

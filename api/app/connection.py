@@ -29,8 +29,10 @@ class WsConnectionManager:
     async def disconnect(self, client_id: str, kind: Literal['web', 'esp']):
         """Disconnect websocket"""
         if kind == 'esp' and client_id in self.esp:
+            self.esp[client_id].close()
             del self.esp[client_id]
         elif client_id in self.web:
+            self.web[client_id].close()
             del self.web[client_id]
             del self.web_esp[client_id]
 

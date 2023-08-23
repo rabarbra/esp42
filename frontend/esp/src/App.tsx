@@ -1,4 +1,3 @@
-import React                from 'react';
 import {
     AppShell
 }                           from '@mantine/core';
@@ -8,6 +7,7 @@ import MainHeader           from './components/MainHeader';
 import {
     ConnectionContextProvider
 }                           from './api/ConnectionContext';
+import { ImgCtxProvider }   from './components/ImgCtx';
 
 function App() {
     return (
@@ -16,7 +16,9 @@ function App() {
                 <AppShell
                     header={<MainHeader/>}
                 >
-                    <Main/>
+                    <ImgCtxProvider>
+                        <Main/>
+                    </ImgCtxProvider>
                 </AppShell>
             </ConnectionContextProvider>
         </ThemeProvider>
