@@ -29,12 +29,14 @@ class WsConnectionManager:
     async def disconnect(self, client_id: str, kind: Literal['web', 'esp']):
         """Disconnect websocket"""
         if kind == 'esp' and client_id in self.esp:
-            await self.esp[client_id].close()
+            ws = self.esp[client_id]
             del self.esp[client_id]
+            await ws.close()
         elif client_id in self.web:
-            await self.web[client_id].close()
+            ws = self.web[client_id]
             del self.web[client_id]
             del self.web_esp[client_id]
+            await ws.close()
 
     async def is_active(self, client_id: str, kind: Literal["web", "esp"]):
         """Check if connection is active"""
