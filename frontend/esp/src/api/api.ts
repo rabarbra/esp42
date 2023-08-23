@@ -67,6 +67,10 @@ export class WebSocketApi {
 		return (this.mstToEsp({op: 2}));
 	}
 
+	public askImg = () => {
+		return (this.mstToEsp({op: 4}));
+	}
+
 	public chngClr = (ledNum: number, color: string, turnOn: boolean) => {
 		if (turnOn)
 			return this.mstToEsp({op: 0, msg: {led: ledNum, clr: Number("0x" + color.slice(1))}});

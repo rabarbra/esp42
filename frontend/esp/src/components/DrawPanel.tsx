@@ -3,17 +3,18 @@ import {
 	ActionIcon,
 	Button,
 	ColorInput,
-	Group,
+	Flex,
 	Modal,
 	SimpleGrid,
 	Stack,
 	useMantineTheme,
 }					from '@mantine/core';
 import {
-	IconCode,
+	IconDownload,
 	IconDroplet,
 	IconEraser,
-	IconTrash
+	IconTrash,
+	IconUpload
 }					from '@tabler/icons-react';
 import ws 			from '../api/api';
 import ImageContext	from './ImgCtx';
@@ -59,6 +60,7 @@ const Btn = (props: {
 					return (val);
 			})])
 			applyImg();
+			props.clbk();
 		} else {
 			chngClr(true);
 			props.clbk();
@@ -90,7 +92,7 @@ const DrawPanel = () => {
 	const [fill, setFill] = React.useState(false);
 	const [swatches, setSwatches] = React.useState([] as string[]);
 	const [jsonOpen, setJsonOpen] = React.useState(false);
-	const { setImg } = React.useContext(ImageContext);
+	const { setImg, applyImg } = React.useContext(ImageContext);
 	const gray = theme.colorScheme === 'dark' ? theme.colors.gray[8] : theme.colors.gray[7];
 	const addToSwatches = () => {
 		if (swatches.includes(clr))
@@ -114,7 +116,7 @@ const DrawPanel = () => {
 					)
 				}
 			</SimpleGrid>
-			<Group spacing={10}>
+			<Flex align="center" justify="center" gap={10}>
 				<ColorInput
 					format="hex"
 					w={140}
@@ -158,20 +160,29 @@ const DrawPanel = () => {
 					size='md'
 					variant="transparent"
 					onClick={()=>{
-						setJsonOpen(true);
+						applyImg();
 					}}
 				>
-					<IconCode/>
+					<IconUpload/>
 				</ActionIcon>
-				<Modal
-					centered
-					title="Send msg to server"
-					opened={jsonOpen}
-					onClose={()=>setJsonOpen(false)}
+				<ActionIcon
+					size='md'
+					variant="transparent"
+					onClick={()=>{
+						ws.askImg();
+					}}
 				>
-					<JsonMsg/>
-				</Modal>
-			</Group>
+					<IconDownload/>
+				</ActionIcon>
+			</Flex>
+			<Modal
+				centered
+				title="Send msg to server"
+				opened={jsonOpen}
+				onClose={()=>setJsonOpen(false)}
+			>
+				<JsonMsg/>
+			</Modal>
 		</Stack>
 	);
 }

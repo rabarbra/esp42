@@ -1,5 +1,6 @@
-import React	from 'react';
-import ws		from './api';
+import React		from 'react';
+import ws			from './api';
+import ImageContext	from '../components/ImgCtx';
 
 const ConnectionContext = React.createContext({
 	connected: false,
@@ -13,6 +14,7 @@ export const ConnectionContextProvider = (
 ) => {
 	const [connected, setConnected] = React.useState(false);
     const [espId, setEspId] = React.useState("");
+	const { setImg, applyImg } = React.useContext(ImageContext);
     const ctx = {
         connected:  connected,
         espId:      espId,
@@ -21,7 +23,7 @@ export const ConnectionContextProvider = (
     }
 	ws.ws.onmessage = (e) => {
 		console.log("Message: ", e);
-		const data = JSON.parse(e.data)
+		const data = JSON.parse(e.data);
 		if (data.esps && Array.isArray(data.esps) &&  data.esps.length > 0)
 		{
 			setConnected(true);
@@ -37,6 +39,12 @@ export const ConnectionContextProvider = (
 		{
 			setConnected(true);
 			setEspId(data.esp_id);
+		}
+		else if (data.msg && (data.msg as string).startsWith("{\"img"))
+		{
+			const img: number[] = JSON.parse(data.msg).img;
+			setImg(img.map(clr=>"#" + clr.toString(16)));
+			applyImg();
 		}
 	}
 	return (

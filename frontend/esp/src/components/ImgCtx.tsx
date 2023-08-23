@@ -20,7 +20,11 @@ export const ImgCtxProvider = (
 	const [apply, setApply] = React.useState(false);
 	React.useEffect(()=>{
 		if (apply === true)
-			ws.sendArray(img.map(val=>Number("0x" + val.slice(1))));
+			ws.sendArray(img.map(val=>{
+				if (val === gray)
+					return (0)
+				return Number("0x" + val.slice(1))
+			}));
 	},[apply, img])
 	const applyImg = () => {
 		setApply(true);

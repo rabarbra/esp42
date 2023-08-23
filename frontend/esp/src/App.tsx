@@ -12,15 +12,15 @@ import { ImgCtxProvider }   from './components/ImgCtx';
 function App() {
     return (
         <ThemeProvider>
-            <ConnectionContextProvider>
-                <AppShell
-                    header={<MainHeader/>}
-                >
-                    <ImgCtxProvider>
+            <ImgCtxProvider>
+                <ConnectionContextProvider>
+                    <AppShell
+                        header={<MainHeader/>}
+                    >
                         <Main/>
-                    </ImgCtxProvider>
-                </AppShell>
-            </ConnectionContextProvider>
+                    </AppShell>
+                </ConnectionContextProvider>
+            </ImgCtxProvider>
         </ThemeProvider>
     );
 }
