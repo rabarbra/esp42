@@ -8,8 +8,8 @@ import uvicorn
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import RedirectResponse
 
-import connection
-import config
+from . import connection
+from . import config
 
 logger = logging.getLogger(__name__)
 config.log_config["loggers"].update({
