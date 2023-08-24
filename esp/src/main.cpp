@@ -226,72 +226,91 @@ void    life(unsigned int secs, bool send)
     }
 }
 
-void     calcColorNeighbours(CRGBArray<64> field, int pos, int (*res)[3])
+void     calcColorNeighbours(CRGBArray<64> field, int pos, uint8_t (*res)[3])
 {
     (*res)[0] = 0;
     (*res)[1] = 0;
     (*res)[2] = 0;
 
-    if (pos - 8 >= 0 && field[pos - 8].r)
-        (*res)[0]++;
-    if (pos - 8 >= 0 && field[pos - 8].g)
-        (*res)[1]++;
-    if (pos - 8 >= 0 && field[pos - 8].b)
-        (*res)[2]++;
-    if (pos + 8 < 64 && field[pos + 8].r)
-        (*res)[0]++;
-    if (pos + 8 < 64 && field[pos + 8].g)
-        (*res)[1]++;
-    if (pos + 8 < 64 && field[pos + 8].b)
-        (*res)[2]++;
+    if (pos - 8 >= 0)
+    {
+        if (field[pos - 8].r > 1)
+            (*res)[0]++;
+        if (field[pos - 8].g > 1)
+            (*res)[1]++;
+        if (field[pos - 8].b > 1)
+            (*res)[2]++;
+    }
+    if (pos + 8 < 64)
+    {
+        if (field[pos + 8].r > 1)
+            (*res)[0]++;
+        if (field[pos + 8].g > 1)
+            (*res)[1]++;
+        if (field[pos + 8].b > 1)
+            (*res)[2]++;
+    }
     if (pos % 8 > 0)
     {
-        if (field[pos - 1].r)
+        if (field[pos - 1].r > 1)
             (*res)[0]++;
-        if (field[pos - 1].g)
+        if (field[pos - 1].g > 1)
             (*res)[1]++;
-        if (field[pos - 1].b)
+        if (field[pos - 1].b > 1)
             (*res)[2]++;
-        if (pos - 9 >= 0 && field[pos - 9].r)
-            (*res)[0]++;
-        if (pos - 9 >= 0 && field[pos - 9].g)
-            (*res)[1]++;
-        if (pos - 9 >= 0 && field[pos - 9].b)
-            (*res)[2]++;
-        if (pos + 7 < 64 && field[pos + 7].r)
-            (*res)[0]++;
-        if (pos + 7 < 64 && field[pos + 7].g)
-            (*res)[1]++;
-        if (pos + 7 < 64 && field[pos + 7].b)
-            (*res)[2]++;
+        if (pos - 9 >= 0)
+        {
+            if (field[pos - 9].r > 1)
+                (*res)[0]++;
+            if (field[pos - 9].g > 1)
+                (*res)[1]++;
+            if (field[pos - 9].b > 1)
+                (*res)[2]++;
+        }
+        if (pos + 7 < 64)
+        {
+            if (field[pos + 7].r > 1)
+                (*res)[0]++;
+            if (field[pos + 7].g > 1)
+                (*res)[1]++;
+            if (field[pos + 7].b > 1)
+                (*res)[2]++;
+        }
     }
     if (pos % 8 < 7)
     {
-        if (field[pos + 1].r)
+        if (field[pos + 1].r > 1)
             (*res)[0]++;
-        if (field[pos + 1].g)
+        if (field[pos + 1].g > 1)
             (*res)[1]++;
-        if (field[pos + 1].b)
+        if (field[pos + 1].b > 1)
             (*res)[2]++;
-        if (pos + 9 < 64 && field[pos + 9].r)
-            (*res)[0]++;
-        if (pos + 9 < 64 && field[pos + 9].g)
-            (*res)[1]++;
-        if (pos + 9 < 64 && field[pos + 9].b)
-            (*res)[2]++;
-        if (pos - 7 >= 0 && field[pos - 7].r)
-            (*res)[0]++;
-        if (pos - 7 >= 0 && field[pos - 7].g)
-            (*res)[1]++;
-        if (pos - 7 >= 0 && field[pos - 7].b)
-            (*res)[2]++;
+        if (pos + 9 < 64)
+        {
+            if (field[pos + 9].r > 1)
+                (*res)[0]++;
+            if (field[pos + 9].g > 1)
+                (*res)[1]++;
+            if (field[pos + 9].b > 1)
+                (*res)[2]++;
+        }
+        if (pos - 7 >= 0)
+        {
+            if (field[pos - 7].r > 1)
+                (*res)[0]++;
+            if (field[pos - 7].g > 1)
+                (*res)[1]++;
+            if (field[pos - 7].b > 1)
+                (*res)[2]++;
+        }
     }
 }
 
 void    colorLife(unsigned int secs, bool send)
 {
+    uint8_t         neighbours[3];
+    uint8_t         r, g, b;
     CRGBArray<64>   buf;
-    int             neighbours[3];
     long unsigned   begin = millis();
 
     while (millis() < begin + secs * 1000)
@@ -300,32 +319,35 @@ void    colorLife(unsigned int secs, bool send)
         for(int i = 0; i < 64; i++)
         {
             calcColorNeighbours(buf, i, &neighbours);
-            leds[i] = 0;
-            if (neighbours[0] == 3)
-                leds[i].r = 0xff;
-            else if (neighbours[0] > 3 && !buf[i].r) 
-                leds[i].r = 0xff;
-            else if (neighbours[0] == 2 && buf[i].r)
-                leds[i].r = 0xff;
-            if (neighbours[1] == 3)
-                leds[i].g = 0xff;
-            else if (neighbours[1] > 3 && !buf[i].g) 
-                leds[i].g = 0xff;
-            else if (neighbours[1] == 2 && buf[i].g)
-                leds[i].g = 0xff;
-            if (neighbours[2] == 3)
-                leds[i].b = 0xff;
-            else if (neighbours[2] > 3 && !buf[i].b) 
-                leds[i].b = 0xff;
-            else if (neighbours[2] == 2 && buf[i].b)
-                leds[i].b = 0xff;
+            r = 0;
+            g = 0;
+            b = 0;
+            if (buf[i].r > 1 && (neighbours[0] == 2 || neighbours[0] == 3))
+                r = buf[i].r;
+            else if (buf[i].r <= 1 && (neighbours[0] >= 3))
+                r = 32 * neighbours[0] - 1;
+            else
+                r = 0;
+            if (buf[i].g > 1 && (neighbours[1] == 2 || neighbours[1] == 3))
+                g = buf[i].g;
+            else if (buf[i].g <= 1 && (neighbours[1] >= 3))
+                g = 32 * neighbours[1] - 1;
+            else
+                g = 0;
+            if (buf[i].b >= 1 && (neighbours[2] == 2 || neighbours[2] == 3))
+                b = buf[i].b;
+            else if (buf[i].b <= 1 && (neighbours[2] >= 3))
+                b = 32 * neighbours[2] - 1;
+            else
+                b = 0;
+            leds[i].setRGB(r, g, b);
         }
         FastLED.show();
         FastLED.show();
         if (send)
         {
             sendImg();
-            delay(200);
+            delay(100);
         }
         else
             delay(500);

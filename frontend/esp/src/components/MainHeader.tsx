@@ -38,7 +38,7 @@ const MainHeader = () =>
 				opened={jsonOpen}
 				onClose={()=>setJsonOpen(false)}
 			>
-				<JsonMsg/>
+				<JsonMsg clbck={()=>setJsonOpen(false)}/>
 			</Modal>
     	</Header>
 	)

@@ -7,7 +7,7 @@ import {
 import ws 					from "../api/api";
 import ConnectionContext	from "../api/ConnectionContext";
 
-const JsonMsg = () => {
+const JsonMsg = (props: {clbck?: ()=>void}) => {
 	const {espId} = React.useContext(ConnectionContext);
 	const [msg, setMsg] = React.useState(JSON.stringify(
 		{op: "msg_esp", "data": {"esp_id": espId, "json": {"op": 4}}},
@@ -30,6 +30,8 @@ const JsonMsg = () => {
 					{
 						console.log("Sending...", msg);
 						ws.ws.send(msg);
+						if (props.clbck)
+							props.clbck();
 					}
 				}}
 			>
