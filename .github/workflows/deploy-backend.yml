@@ -11,7 +11,9 @@ jobs:
       ECS_CLUSTER: api
       ECS_TASK_DEFINITION: arn:aws:ecs:eu-central-1:637811218859:task-definition/api-api
       CONTAINER_NAME: 637811218859.dkr.ecr.eu-central-1.amazonaws.com/esp42:latest
+
     steps:
+
       - name: Checking out code
         uses: actions/checkout@v3
 
@@ -39,7 +41,7 @@ jobs:
           docker tag $ECR_REPOSITORY:latest $CONTAINER_NAME
           docker push $CONTAINER_NAME
 
-       - name: Fill in the new image ID in the Amazon ECS task definition
+      - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
         uses: aws-actions/amazon-ecs-render-task-definition@c804dfbdd57f713b6c079302a4c01db7017a36fc
         with:
