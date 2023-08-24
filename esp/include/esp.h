@@ -28,9 +28,20 @@ WebSocketsClient            webSocket;
 StaticJsonDocument<2048>    doc;
 StaticJsonDocument<2048>    responseDoc;
 
+// Scheduler for tasks
+unsigned long   _prev = millis();
+unsigned long   _beg = 0;
+bool            running = false;
+int             intervalMills = 0;
+int             durationSecs = 0;
+void            (*f)() = 0;
+bool            arg = false;
+
+// Methods
 void    webSocketEvent(WStype_t type, uint8_t *payload, size_t length);
+void    scheduler();
 void    connectionAnim();
 void    connectedAnim();
-void    life(unsigned int secs, bool send);
-void    colorLife(unsigned int secs, bool send);
+void    life();
+void    colorLife();
 #endif

@@ -29,13 +29,13 @@ void    setup()
 	webSocket.setReconnectInterval(2000);
     //webSocket.enableHeartbeat(6000, 1000, 4);
     delay(1000);
-    FastLED.clear();
-    FastLED.show();
+    FastLED.clear(true);
 }
 
 void    loop()
 {
     webSocket.loop();
+    scheduler();
 }
 
 void switchLed(int op, JsonObject obj)
@@ -82,10 +82,14 @@ void    playLife(JsonObject obj)
     bool    color = obj["clr"];
     bool    cast = obj["cast"];
 
+    arg = cast;
+    durationSecs = secs;
+    intervalMills = 200;
     if (color)
-        colorLife(secs, cast);
+        f = &colorLife;
     else
-        life(secs, cast);
+        f = &life;
+    running = true;
 }
 
 void    doOp(uint8_t *payload)
@@ -136,6 +140,31 @@ void    webSocketEvent(WStype_t type, uint8_t * payload, size_t length)
             break;
         default:
             break;
+    }
+}
+
+void        scheduler()
+{
+    if (!running)
+        return ;
+
+    unsigned long   curr = millis();
+    if (!_beg)
+        _beg = curr;
+    else if (curr >= _beg + durationSecs * 1000)
+    {
+        running = false;
+        _beg = 0;
+        f = 0;
+        arg = false;
+        intervalMills = 0;
+        durationSecs = 0;
+        return ;
+    }
+    if (curr >= _prev + intervalMills)
+    {
+        _prev = curr;
+        (*f)();
     }
 }
 
@@ -202,38 +231,30 @@ int     calcNeighbours(CRGBArray<64> field, int pos)
     return (res);
 }
 
-void    life(unsigned int secs, bool send)
+void    life()
 {
     CRGBArray<64>   buf;
     int             neighbours;
     int             clr = 0xFF0000;
-    long unsigned   begin = millis();
+    bool            send = arg;
 
-    while (millis() < begin + secs * 1000)
+    buf = leds;
+    for(int i = 0; i < 64; i++)
     {
-        buf = leds;
-        for(int i = 0; i < 64; i++)
-        {
-            neighbours = calcNeighbours(buf, i);
-            if (neighbours == 3)
-                leds[i] = clr;
-            else if (neighbours > 3 && !isAlive(buf[i])) 
-                leds[i] = clr;
-            else if (neighbours == 2 && isAlive(buf[i]))
-                leds[i] = clr;
-            else
-                leds[i] = 0;
-        }
-        FastLED.show();
-        FastLED.show();
-        if (send)
-        {
-            sendImg();
-            delay(200);
-        }
+        neighbours = calcNeighbours(buf, i);
+        if (neighbours == 3)
+            leds[i] = clr;
+        else if (neighbours > 3 && !isAlive(buf[i])) 
+            leds[i] = clr;
+        else if (neighbours == 2 && isAlive(buf[i]))
+            leds[i] = clr;
         else
-            delay(500);
+            leds[i] = 0;
     }
+    FastLED.show();
+    FastLED.show();
+    if (send)
+        sendImg();
 }
 
 void     calcColorNeighbours(CRGBArray<64> field, int pos, uint8_t (*res)[3])
@@ -316,50 +337,43 @@ void     calcColorNeighbours(CRGBArray<64> field, int pos, uint8_t (*res)[3])
     }
 }
 
-void    colorLife(unsigned int secs, bool send)
+void    colorLife()
 {
     uint8_t         neighbours[3];
     uint8_t         r, g, b;
     CRGBArray<64>   buf;
-    long unsigned   begin = millis();
+    bool            send = arg;
 
-    while (millis() < begin + secs * 1000)
+    buf = leds;
+    FastLED.clear();
+    for(int i = 0; i < 64; i++)
     {
-        buf = leds;
-        for(int i = 0; i < 64; i++)
-        {
-            calcColorNeighbours(buf, i, &neighbours);
-            r = 0;
-            g = 0;
-            b = 0;
-            if (buf[i].r > 1 && (neighbours[0] == 2 || neighbours[0] == 3))
-                r = buf[i].r;
-            else if (buf[i].r <= 1 && (neighbours[0] >= 3))
-                r = 32 * neighbours[0] - 1;
-            else
-                r = 0;
-            if (buf[i].g > 1 && (neighbours[1] == 2 || neighbours[1] == 3))
-                g = buf[i].g;
-            else if (buf[i].g <= 1 && (neighbours[1] >= 3))
-                g = 32 * neighbours[1] - 1;
-            else
-                g = 0;
-            if (buf[i].b >= 1 && (neighbours[2] == 2 || neighbours[2] == 3))
-                b = buf[i].b;
-            else if (buf[i].b <= 1 && (neighbours[2] >= 3))
-                b = 32 * neighbours[2] - 1;
-            else
-                b = 0;
-            leds[i].setRGB(r, g, b);
-        }
-        FastLED.show();
-        FastLED.show();
-        if (send)
-        {
-            sendImg();
-            delay(100);
-        }
+        calcColorNeighbours(buf, i, &neighbours);
+        r = 0;
+        g = 0;
+        b = 0;
+        if (buf[i].r > 1 && (neighbours[0] == 2 || neighbours[0] == 3))
+            r = buf[i].r;
+        else if (buf[i].r <= 1 && (neighbours[0] >= 3))
+            r = 32 * neighbours[0] - 1;
         else
-            delay(500);
+            r = 0;
+        if (buf[i].g > 1 && (neighbours[1] == 2 || neighbours[1] == 3))
+            g = buf[i].g;
+        else if (buf[i].g <= 1 && (neighbours[1] >= 3))
+            g = 32 * neighbours[1] - 1;
+        else
+            g = 0;
+        if (buf[i].b >= 1 && (neighbours[2] == 2 || neighbours[2] == 3))
+            b = buf[i].b;
+        else if (buf[i].b <= 1 && (neighbours[2] >= 3))
+            b = 32 * neighbours[2] - 1;
+        else
+            b = 0;
+        leds[i].setRGB(r, g, b);
     }
+    FastLED.show();
+    FastLED.show();
+    if (send)
+        sendImg();
 }
