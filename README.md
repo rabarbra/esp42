@@ -4,6 +4,8 @@
 
 - Python
 - FastAPI
+- WebSockets
+- Uvicorn
 
 Deployed in AWS ECS
 
