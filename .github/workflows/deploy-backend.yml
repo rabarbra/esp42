@@ -40,6 +40,7 @@ jobs:
           docker build -t $ECR_REPOSITORY
           docker tag $ECR_REPOSITORY:latest $CONTAINER_NAME
           docker push $CONTAINER_NAME
+        working-directory: ${{env.working-directory}}
 
       - name: Fill in the new image ID in the Amazon ECS task definition
         id: task-def
