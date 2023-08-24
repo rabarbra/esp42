@@ -76,6 +76,18 @@ void    sendImg()
     responseDoc.clear();
 }
 
+void    playLife(JsonObject obj)
+{
+    int     secs = obj["time"];
+    bool    color = obj["clr"];
+    bool    cast = obj["cast"];
+
+    if (color)
+        colorLife(secs, cast);
+    else
+        life(secs, cast);
+}
+
 void    doOp(uint8_t *payload)
 {
     deserializeJson(doc, payload);
@@ -92,9 +104,7 @@ void    doOp(uint8_t *payload)
     else if (op_type == 4)
         sendImg();
     else if (op_type == 5)
-        life(60, true);
-    else if (op_type == 6)
-        colorLife(60, true);
+        playLife(doc["msg"]);
     else if (op_type == 9)
         webSocket.sendTXT("connected");
     doc.clear();

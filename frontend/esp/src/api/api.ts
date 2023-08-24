@@ -71,6 +71,14 @@ export class WebSocketApi {
 		return (this.mstToEsp({op: 4}));
 	}
 
+	public playLife = (
+		cast: boolean,
+		colorous: boolean,
+		seconds: Number
+	) => {
+		return (this.mstToEsp({op: 5, msg: {cast: cast, clr: colorous, time: seconds}}));
+	}
+
 	public chngClr = (ledNum: number, color: string, turnOn: boolean) => {
 		if (turnOn)
 			return this.mstToEsp({op: 0, msg: {led: ledNum, clr: Number("0x" + color.slice(1))}});

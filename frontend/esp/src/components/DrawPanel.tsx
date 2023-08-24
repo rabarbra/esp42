@@ -7,12 +7,18 @@ import {
 	Modal,
 	SimpleGrid,
 	Stack,
+	TextInput,
 	useMantineTheme,
 }					from '@mantine/core';
 import {
+	IconCast,
+	IconCastOff,
 	IconDownload,
 	IconDroplet,
 	IconEraser,
+	IconPalette,
+	IconPaletteOff,
+	IconPlayerPlay,
 	IconTrash,
 	IconUpload
 }					from '@tabler/icons-react';
@@ -88,6 +94,9 @@ const DrawPanel = () => {
 	const theme = useMantineTheme();
 	const [clr, setClr] = React.useState(initColor);
 	const [clear, setClear] = React.useState(false);
+	const [cast, setCast] = React.useState(false);
+	const [colorous, setColorous] = React.useState(false);
+	const [time, setTime] = React.useState(60);
 	const [eraser, setEraser] = React.useState(false);
 	const [fill, setFill] = React.useState(false);
 	const [swatches, setSwatches] = React.useState([] as string[]);
@@ -100,7 +109,66 @@ const DrawPanel = () => {
 		setSwatches([clr, ...swatches.slice(0, 9)])
 	};
 	return (
-		<Stack align='center'>
+		<Stack align="center">
+			<Flex
+				align="center"
+				w="100%"
+				justify="flex-start" 
+				gap={10}
+			>
+				<TextInput
+					defaultValue={time}
+					size="xs"
+					w={40}
+					onChange={(e)=>setTime(Number(e.target.value))}
+				/>
+				<ActionIcon
+					size='sm'
+					variant="transparent"
+					onClick={()=>{
+						setCast(!cast);
+					}}
+				>
+					{cast ? <IconCast/> : <IconCastOff/>}
+				</ActionIcon>
+				<ActionIcon
+					size='sm'
+					variant="transparent"
+					onClick={()=>{
+						setColorous(!colorous)
+					}}
+				>
+					{colorous ? <IconPalette/> : <IconPaletteOff/> }
+				</ActionIcon>
+				<ActionIcon
+					size='sm'
+					variant="transparent"
+					onClick={()=>{
+						ws.playLife(cast, colorous, time);
+					}}
+				>
+					<IconPlayerPlay/>
+				</ActionIcon>
+				<ActionIcon
+					ml="auto"
+					size='md'
+					variant="transparent"
+					onClick={()=>{
+						applyImg();
+					}}
+				>
+					<IconUpload/>
+				</ActionIcon>
+				<ActionIcon
+					size='md'
+					variant="transparent"
+					onClick={()=>{
+						ws.askImg();
+					}}
+				>
+					<IconDownload/>
+				</ActionIcon>
+			</Flex>
 			<SimpleGrid cols={8} spacing={5}>
 				{
 					Array.from({length: 64}, (_, i) =>
@@ -116,7 +184,7 @@ const DrawPanel = () => {
 					)
 				}
 			</SimpleGrid>
-			<Flex align="center" justify="center" gap={10}>
+			<Flex align="center" justify="center" gap={15}>
 				<ColorInput
 					format="hex"
 					w={140}
@@ -155,24 +223,6 @@ const DrawPanel = () => {
 					onMouseUp={()=>setClear(false)}
 				>
 					<IconTrash/>
-				</ActionIcon>
-				<ActionIcon
-					size='md'
-					variant="transparent"
-					onClick={()=>{
-						applyImg();
-					}}
-				>
-					<IconUpload/>
-				</ActionIcon>
-				<ActionIcon
-					size='md'
-					variant="transparent"
-					onClick={()=>{
-						ws.askImg();
-					}}
-				>
-					<IconDownload/>
 				</ActionIcon>
 			</Flex>
 			<Modal
